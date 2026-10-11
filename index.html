@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر K7 Store</title>
+    <!-- خط Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #080c0e;
+            --card-bg: rgba(15, 23, 28, 0.65);
+            --card-border: rgba(30, 215, 160, 0.18);
+            --primary-accent: #1ed7a0;
+            --primary-glow: rgba(30, 215, 160, 0.4);
+            --text-main: #ffffff;
+            --text-secondary: #a0aec0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+            cursor: default;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* الخلفية والدائرة الخضراء الضخمة والخطوط المتحركة */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .giant-green-circle {
+            position: absolute;
+            top: -20vh;
+            left: -20vw;
+            width: 70vw;
+            height: 70vw;
+            border: 45px solid rgba(30, 215, 160, 0.12);
+            border-radius: 50%;
+            box-shadow: 0 0 100px rgba(30, 215, 160, 0.05);
+            animation: rotateCircle 25s linear infinite;
+        }
+
+        @keyframes rotateCircle {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.03); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .light-beam {
+            position: absolute;
+            width: 200%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(30, 215, 160, 0.25), transparent);
+            transform: rotate(-35deg);
+            animation: beamMove 8s linear infinite;
+        }
+
+        .beam-1 { top: 20%; left: -50%; animation-delay: 0s; }
+        .beam-2 { top: 60%; left: -30%; animation-delay: 3s; }
+        .beam-3 { top: 85%; left: -40%; animation-delay: 5s; }
+
+        @keyframes beamMove {
+            0% { transform: translateY(-50px) rotate(-35deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(300px) rotate(-35deg); opacity: 0; }
+        }
+
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* ذيل الماوس والجسيمات التفاعلية */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--primary-accent);
+            transition: transform 0.1s ease;
+        }
+
+        .cursor-follower {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--primary-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.18s ease-out, width 0.2s, height 0.2s, background-color 0.2s;
+            box-shadow: 0 0 15px rgba(30, 215, 160, 0.2);
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: var(--primary-accent);
+            box-shadow: 0 0 8px var(--primary-accent);
+            z-index: 9997;
+            animation: particleFade 0.8s forwards ease-out;
+        }
+
+        @keyframes particleFade {
+            0% { opacity: 0.9; transform: scale(1) translate(0, 0); }
+            100% { opacity: 0; transform: scale(0) translate(var(--dx), var(--dy)); }
+        }
+
+        /* الهيدر ورأس الصفحة */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 6%;
+            background: rgba(8, 12, 14, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(30, 215, 160, 0.12);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo-img-wrapper {
+            position: relative;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--primary-accent), rgba(255, 255, 255, 0.1));
+            box-shadow: 0 0 20px rgba(30, 215, 160, 0.35);
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(30, 215, 160, 0.3); }
+            100% { box-shadow: 0 0 25px rgba(30, 215, 160, 0.7); }
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .brand-name span {
+            color: var(--primary-accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+            cursor: pointer;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-accent);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--primary-accent);
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        nav a:hover::after, nav a.active::after {
+            width: 100%;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-discord {
+            background: var(--primary-accent);
+            color: #080c0e;
+            padding: 9px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 15px rgba(30, 215, 160, 0.2);
+            cursor: pointer;
+        }
+
+        .btn-discord:hover {
+            background: #17b083;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30, 215, 160, 0.4);
+        }
+
+        /* البانر الرئيسي */
+        .hero {
+            padding: 60px 6% 30px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 215, 160, 0.1);
+            border: 1px solid var(--card-border);
+            color: var(--primary-accent);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            color: var(--primary-accent);
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary-accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 17px;
+            max-width: 650px;
+            margin: 0 auto 30px;
+            line-height: 1.7;
+        }
+
+        /* الأقسام التفاعلية */
+        .tab-content {
+            display: none;
+            padding: 0 6% 80px;
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-accent);
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-accent);
+            margin: 10px auto 0;
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        .staff-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .staff-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(30, 215, 160, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(30, 215, 160, 0.15);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            background: rgba(30, 215, 160, 0.15);
+            border: 1px solid rgba(30, 215, 160, 0.3);
+            color: var(--primary-accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .card-icon {
+            width: 65px;
+            height: 65px;
+            background: rgba(30, 215, 160, 0.08);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--primary-accent);
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .card:hover .card-icon {
+            background: var(--primary-accent);
+            color: #080c0e;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+
+        .card-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-accent);
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        .about-store-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(12px);
+            text-align: center;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .about-store-box h3 {
+            font-size: 24px;
+            color: var(--primary-accent);
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .about-store-box p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .rules-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .rule-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px 25px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .rule-number {
+            background: var(--primary-accent);
+            color: #080c0e;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .rule-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+            padding-top: 3px;
+        }
+
+        .rule-text strong {
+            color: #fff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 35px 6%;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(5, 8, 10, 0.8);
+            color: var(--text-secondary);
+            font-size: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 4%; }
+            nav ul { gap: 10px; }
+            nav a { font-size: 12px; }
+            .hero h1 { font-size: 30px; }
+            .hero p { font-size: 14px; }
+            .brand-name { font-size: 18px; }
+            .logo-img-wrapper { width: 45px; height: 45px; }
+            .giant-green-circle { width: 120vw; height: 120vw; top: -10vh; left: -50vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="giant-green-circle"></div>
+        <div class="light-beam beam-1"></div>
+        <div class="light-beam beam-2"></div>
+        <div class="light-beam beam-3"></div>
+    </div>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-follower" id="cursor-follower"></div>
+
+    <header>
+        <a href="https://discord.gg/pm2UDqWZY" target="_blank" class="brand-logo">
+            <div class="logo-img-wrapper">
+                <img src="https://cdn.discordapp.com/icons/1554858309608022066/a3eaa43b64e2b3d59db5a4a2649fdb6a.webp?size=4096" alt="Logo" class="logo-img">
+            </div>
+            <div class="brand-name">متجر <span>K7 Store</span></div>
+        </a>
+
+        <nav>
+            <ul>
+                <li><a class="nav-link active" onclick="switchTab('home')">الرئيسية</a></li>
+                <li><a class="nav-link" onclick="switchTab('scripts')">السكربتات الحصرية</a></li>
+                <li><a class="nav-link" onclick="switchTab('faq')">الأسئلة الشائعة</a></li>
+                <li><a class="nav-link" onclick="switchTab('offers')">العروض</a></li>
+                <li><a class="nav-link" onclick="switchTab('rules')">القوانين</a></li>
+                <li><a class="nav-link" onclick="switchTab('support')">الدعم الفني</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-actions">
+            <a href="https://discord.gg/pm2UDqWZY" target="_blank" class="btn-discord">
+                <i class="fa-brands fa-discord"></i> دخول السيرفر
+            </a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-badge">
+            <i class="fa-solid fa-sparkles"></i> المتجر الرسمي والحصري
+        </div>
+        <h1>مرحباً بك في <span>متجر K7 Store</span></h1>
+        <p>وجهتك الأولى لتسوق الخدمات الحصرية والبرمجيات وسكربتات فايف أم بأفضل جودة وسرعة تنفيذ.</p>
+    </section>
+
+    <!-- 1. الرئيسية وإدارة المتجر -->
+    <div id="home" class="tab-content active">
+        <div class="about-store-box">
+            <h3>نبذة عن متجر K7 Store</h3>
+            <p>متجر K7 Store هو متجرك المتكامل المتخصص في توفير أفضل الحلول والخدمات الرقمية وسيرفرات الفايف ام، ديسكورد، والسكربتات الحصرية الاحترافية بأعلى جودة ودعم متواصل.</p>
+        </div>
+
+        <h2 class="section-title">إدارة وطاقم المتجر</h2>
+        <div class="staff-rows-container">
+            <div class="staff-row">
+                <div class="card">
+                    <span class="card-badge">المالك</span>
+                    <div class="card-icon"><i class="fa-solid fa-user-gear"></i></div>
+                    <h3 class="card-title">صاحب المتجر</h3>
+                    <div class="card-subtitle">تركي العسيري</div>
+                    <p class="card-desc">المسؤول الأول عن الإدارة العامة والتوجيه والإشراف الكامل على خدمات متجر K7.</p>
+                </div>
+
+                <div class="card">
+                    <span class="card-badge">نائب المالك</span>
+                    <div class="card-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <h3 class="card-title">نائب صاحب المتجر</h3>
+                    <div class="card-subtitle">محمد العسيري</div>
+                    <p class="card-desc">المسؤول عن متابعة سير العمل وتنفيذ الطلبات وتسهيل تقديم الخدمات للعملاء.</p>
+                </div>
+            </div>
+
+            <div class="staff-row" style="max-width: 450px; margin: 0 auto;">
+                <div class="card">
+                    <span class="card-badge">Developer</span>
+                    <div class="card-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3 class="card-title">مبرمج المتجر</h3>
+                    <div class="card-subtitle">محمد الحربي</div>
+                    <p class="card-desc">المسؤول عن التطوير البرمجي وتصميم المواقع والبوتات والحلول التقنية.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. السكربتات الحصرية الجديد -->
+    <div id="scripts" class="tab-content">
+        <h2 class="section-title">السكربتات الحصرية والأنظمة المتقدمة</h2>
+        <div class="grid-container">
+            <!-- 1. تقفيل جميع ثغرات الطياران -->
+            <div class="card">
+                <span class="card-badge">حماية وأمان</span>
+                <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3 class="card-title">مانع ثغرات الطياران</h3>
+                <p class="card-desc">نظام حماية متطور ومحكم لإغلاق وتقفيل جميع ثغرات الطياران والطيران العشوائي بالكامل لضمان عدالة اللعب.</p>
+            </div>
+
+            <!-- 2. شوب حصري -->
+            <div class="card">
+                <span class="card-badge">متجر داخل السيرفر</span>
+                <div class="card-icon"><i class="fa-solid fa-store"></i></div>
+                <h3 class="card-title">الشوب الحصري (Exclusive Shop)</h3>
+                <p class="card-desc">واجهة متجر احترافية وتفاعلية بتصميم فريد تتيح للاعبين شراء الأغراض والمستلزمات بكل سلاسة.</p>
+            </div>
+
+            <!-- 3. سكريبت التهريب -->
+            <div class="card">
+                <span class="card-badge">أكشن وفعاليات</span>
+                <div class="card-icon"><i class="fa-solid fa-masks-theater"></i></div>
+                <h3 class="card-title">نظام وسكربت التهريب</h3>
+                <p class="card-desc">فعاليات ومهام تهريب ممنوعات حماسية وموزعة باحترافية لإضافة متعة وإثارة لتجربة الرول بلاي.</p>
+            </div>
+
+            <!-- 4. قائمة Adminjob -->
+            <div class="card">
+                <span class="card-badge">إدارة وموظفين</span>
+                <div class="card-icon"><i class="fa-solid fa-user-tie"></i></div>
+                <h3 class="card-title">قائمة الإداريين (Adminjob)</h3>
+                <p class="card-desc">لوحة تحكم فريدة وسريعة خاصة بالوظائف الإدارية وصلاحيات الموظفين داخل السيرفر.</p>
+            </div>
+
+            <!-- 5. ساحة القتال -->
+            <div class="card">
+                <span class="card-badge">PvP Arena</span>
+                <div class="card-icon"><i class="fa-solid fa-crosshairs"></i></div>
+                <h3 class="card-title">ساحة القتال (PvP)</h3>
+                <p class="card-desc">منطقة قتال مخصصة ومزودة بأنظمة تبديل أسلحة واختيار رسباون سريع لتدريب الهبد والاختبارات.</p>
+            </div>
+
+            <!-- 6. الهود -->
+            <div class="card">
+                <span class="card-badge">HUD UI</span>
+                <div class="card-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                <h3 class="card-title">الهود الحصري (HUD)</h3>
+                <p class="card-desc">تصميم هود عصري، خفيف، وواضح يعرض مؤشرات الحياة، الدرع، السرعة، والوقود بتنسيق جذاب.</p>
+            </div>
+
+            <!-- 7. سكربت العصابات -->
+            <div class="card">
+                <span class="card-badge">Gangs System</span>
+                <div class="card-icon"><i class="fa-solid fa-skull"></i></div>
+                <h3 class="card-title">نظام العصابات المتكامل</h3>
+                <p class="card-desc">إدارة شاملة لمقرات العصابات، غسيل الأموال، السيطرة على المناطق، وصناديق التخزين المحمية.</p>
+            </div>
+
+            <!-- 8. الراديو الحصري -->
+            <div class="card">
+                <span class="card-badge">Voice Radio</span>
+                <div class="card-icon"><i class="fa-solid fa-walkie-talkie"></i></div>
+                <h3 class="card-title">الراديو الحصري (PMA Radio)</h3>
+                <p class="card-desc">راديو صوتي متطور ونقي مع واجهة مستخدم مخصصة وقنوات سرية آمنة للشرطة والعصابات.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. الأسئلة الشائعة (FAQ) -->
+    <div id="faq" class="tab-content">
+        <h2 class="section-title">الأسئلة الشائعة (FAQ)</h2>
+        <div class="rules-list">
+            <div class="rule-item">
+                <div class="rule-number"><i class="fa-solid fa-question"></i></div>
+                <div class="rule-text">
+                    <strong>هل السكربتات مشفرة بالكامل؟</strong><br>
+                    نعم، جميع السكربتات مشفرة وتعمل بنظام الحماية الرسمي من (CFX Keymaster)، ولكن ملفات التكوين (config.lua) مفتوحة بالكامل لتخصيص السكربت وإعداده بما يتناسب مع سيرفرك بكل سهولة.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number"><i class="fa-solid fa-question"></i></div>
+                <div class="rule-text">
+                    <strong>كيف يتم تسليم وتفعيل السكربتات بعد الدفع؟</strong><br>
+                    بعد فتح تذكرة دعم فني وتأكيد التحويل البنكي يدوياً مع الإدارة، يتم منحك الصلاحية وتفعيل السكربت على الخاص عن طريق البوت فوراً لتقوم بتحميله واستخدامه.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number"><i class="fa-solid fa-question"></i></div>
+                <div class="rule-text">
+                    <strong>هل توفرون الدعم الفني للتركيب وحل المشكلات؟</strong><br>
+                    نعم بالتأكيد! نوفر دعماً فنياً متكاملاً على مدار الساعة عبر نظام التذاكر في سيرفر الديسكورد لمساعدتك في تركيب وتثبيت السكربتات وحل أي تعارضات برمجية قد تواجهك.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. العروض -->
+    <div id="offers" class="tab-content">
+        <h2 class="section-title">العروض والتخفيضات</h2>
+        <div class="grid-container">
+            <div class="card">
+                <span class="card-badge">عرض لفترة محدودة</span>
+                <div class="card-icon"><i class="fa-solid fa-tags"></i></div>
+                <h3 class="card-title">حزمة التطوير الشامل للسكربتات</h3>
+                <p class="card-desc">احصل على مجموعة سكربتات العصابات، التهريب، والهود الحصري معاً بسعر خاص ومخفض.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. القوانين -->
+    <div id="rules" class="tab-content">
+        <h2 class="section-title">قوانين وشروط الشراء</h2>
+        <div class="rules-list">
+            <div class="rule-item">
+                <div class="rule-number">1</div>
+                <div class="rule-text"><strong>التأكد من الطلب:</strong> يرجى التأكد من تفاصيل الخدمة أو المنتج قبل فتح تكت الشراء.</div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">2</div>
+                <div class="rule-text"><strong>سياسة الاسترجاع:</strong> كافة الخدمات البرمجية والمنتجات الرقمية نهائية ولا يمكن استرجاع المبالغ بعد التسليم.</div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">3</div>
+                <div class="rule-text"><strong>الاحترام والتعامل:</strong> يمنع إزعاج الإدارة أو طاقم الدعم الفني، والتواصل يتم عبر تذاكر الدعم الرسمية فقط.</div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">4</div>
+                <div class="rule-text"><strong>الدعم والصيانة:</strong> يشمل أي منتج مدة محددة للدعم الفني بحسب نوع الخدمة المتفق عليها في التكت.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. الدعم الفني -->
+    <div id="support" class="tab-content">
+        <h2 class="section-title">الدعم الفني والطلبات</h2>
+        <div style="text-align: center; max-width: 600px; margin: 0 auto;" class="card">
+            <div class="card-icon" style="margin: 0 auto 20px;"><i class="fa-solid fa-ticket"></i></div>
+            <h3 class="card-title">فتح تذكرة دعم (Ticket)</h3>
+            <p class="card-desc" style="margin-bottom: 25px;">لإتمام عمليات الشراء، طلب استفسار، أو متابعة أعمال البرمجة، تفضل بالدخول عبر رابط الديسكورد.</p>
+            <a href="https://discord.gg/pm2UDqWZY" target="_blank" class="btn-discord" style="display: inline-flex; justify-content: center;">
+                الانتقال للديسكورد لفتح تكت
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <p>جميع الحقوق محفوظة &copy; 2026 متجر K7 Store | K7 Store</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const orbs = [];
+        const orbCount = 5;
+        const colors = ['rgba(30, 215, 160, ', 'rgba(15, 140, 105, '];
+
+        for (let i = 0; i < orbCount; i++) {
+            orbs.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 250 + 150,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                alpha: Math.random() * 0.12 + 0.03,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4
+            });
+        }
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            orbs.forEach(orb => {
+                orb.x += orb.vx;
+                orb.y += orb.vy;
+
+                if (orb.x < -orb.radius) orb.x = canvas.width + orb.radius;
+                if (orb.x > canvas.width + orb.radius) orb.x = -orb.radius;
+                if (orb.y < -orb.radius) orb.y = canvas.height + orb.radius;
+                if (orb.y > canvas.height + orb.radius) orb.y = -orb.radius;
+
+                const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+                gradient.addColorStop(0, orb.color + orb.alpha + ')');
+                gradient.addColorStop(1, orb.color + '0)');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        const dot = document.getElementById('cursor-dot');
+        const follower = document.getElementById('cursor-follower');
+
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let followerX = mouseX;
+        let followerY = mouseY;
+        let lastParticleTime = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.left = mouseX + 'px';
+            dot.style.top = mouseY + 'px';
+
+            const now = Date.now();
+            if (now - lastParticleTime > 35) {
+                createParticle(mouseX, mouseY);
+                lastParticleTime = now;
+            }
+        });
+
+        function animateCursor() {
+            followerX += (mouseX - followerX) * 0.15;
+            followerY += (mouseY - followerY) * 0.15;
+            follower.style.left = followerX + 'px';
+            follower.style.top = followerY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        function createParticle(x, y) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 4 + 2;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 25 + 10;
+            const dx = Math.cos(angle) * speed + 'px';
+            const dy = Math.sin(angle) * speed + 'px';
+
+            p.style.setProperty('--dx', dx);
+            p.style.setProperty('--dy', dy);
+
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
+        }
+
+        const interactiveElements = document.querySelectorAll('button, a, .card, nav a');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                follower.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                follower.style.backgroundColor = 'rgba(30, 215, 160, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                follower.style.transform = 'translate(-50%, -50%) scale(1)';
+                follower.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body>
+</html>
